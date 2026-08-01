@@ -1,0 +1,151 @@
+# Professional goals used to score event invites
+# Weights are 0.0–1.0; all weights should sum to ~1.0
+
+identity:
+  role: "AI Product Manager"
+  target_role: "AI Executive"
+  location: "San Francisco, CA"
+  industry_focus: "Artificial Intelligence"
+
+goals:
+  - id: ai_professional_sf
+    name: "Be a valued AI professional in SF"
+    weight: 0.25
+    signals:
+      positive:
+        - "san francisco"
+        - "sf bay area"
+        - "silicon valley"
+        - "ai product"
+        - "ai pm"
+        - "aipm"
+        - "product manager"
+        - "executive"
+        - "founder"
+        - "vc"
+        - "venture"
+      negative:
+        - "remote only"
+        - "virtual only"
+        - "online webinar"
+        - "outside california"
+
+  - id: learn_ai
+    name: "Learn more about AI"
+    weight: 0.20
+    signals:
+      positive:
+        - "llm"
+        - "genai"
+        - "generative ai"
+        - "machine learning"
+        - "deep learning"
+        - "agents"
+        - "rag"
+        - "fine-tuning"
+        - "workshop"
+        - "masterclass"
+        - "technical"
+        - "research"
+        - "openai"
+        - "anthropic"
+        - "nvidia"
+      negative:
+        - "sales pitch"
+        - "recruiting only"
+        - "job fair"
+        - "resume review"
+
+  - id: quality_networking
+    name: "Network with high-quality people"
+    weight: 0.30
+    signals:
+      positive:
+        - "founders"
+        - "executives"
+        - "c-suite"
+        - "vp"
+        - "director"
+        - "investors"
+        - "partners"
+        - "dinner"
+        - "intimate"
+        - "exclusive"
+        - "invite-only"
+        - "curated"
+        - "summit"
+        - "roundtable"
+        - "fireside"
+      negative:
+        - "mass networking"
+        - "speed networking"
+        - "500+ attendees"
+        - "free for all"
+        - "booth"
+        - "expo hall"
+
+  - id: aipm_path
+    name: "Progress toward AIPM role"
+    weight: 0.15
+    signals:
+      positive:
+        - "product management"
+        - "ai product"
+        - "pm"
+        - "roadmap"
+        - "0-to-1"
+        - "ship"
+        - "launch"
+        - "case study"
+        - "product leader"
+      negative:
+        - "pure engineering"
+        - "coding bootcamp"
+        - "data entry"
+
+  - id: executive_path
+    name: "Progress toward AI executive role"
+    weight: 0.10
+    signals:
+      positive:
+        - "executive"
+        - "leadership"
+        - "strategy"
+        - "board"
+        - "ceo"
+        - "cto"
+        - "chief"
+        - "summit"
+        - "keynote"
+        - "panel"
+      negative:
+        - "student"
+        - "intern"
+        - "entry level"
+        - "junior"
+
+thresholds:
+  accept: 0.65        # Score >= this → accept
+  review: 0.45        # Score in [review, accept) → ask user
+  decline: 0.45       # Score < this → decline
+
+event_types:
+  high_value:
+    - summit
+    - dinner
+    - roundtable
+    - fireside
+    - executive breakfast
+    - founder dinner
+    - ai meetup
+    - workshop
+  medium_value:
+    - conference
+    - meetup
+    - networking
+    - panel
+  low_value:
+    - webinar
+    - virtual event
+    - job fair
+    - expo

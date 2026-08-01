@@ -1,0 +1,61 @@
+# Profile used for form fills and RSVP replies
+
+personal:
+  full_name: "Siddharth Rallabandi"
+  email: "you@gmail.com"
+  phone: "+14155551234"
+  linkedin_url: "https://linkedin.com/in/yourprofile"
+  title: "AI Product Manager"
+  company: "Your Company"
+  location: "San Francisco, CA"
+  bio: >
+    AI product leader focused on building intelligent systems that ship.
+    Based in San Francisco. Passionate about AI agents, product strategy,
+    and connecting with founders and executives in the AI ecosystem.
+
+preferences:
+  dietary: "No restrictions"
+  t_shirt_size: "M"
+  timezone: "America/Los_Angeles"
+
+reply_templates:
+  accept: |
+    Hi {sender_name},
+
+    Thank you for the invitation to {event_name}! I'd love to attend —
+    this looks like a great opportunity to connect with the AI community in SF.
+
+    Please let me know if there's anything else you need from me to confirm my spot.
+
+    Best,
+    {full_name}
+
+  decline: |
+    Hi {sender_name},
+
+    Thank you so much for thinking of me and for the invitation to {event_name}.
+    Unfortunately, I won't be able to make it this time due to prior commitments.
+
+    I'd love to stay connected for future events — please keep me in mind.
+
+    Best,
+    {full_name}
+
+  payment_inquiry: |
+    Hi {sender_name},
+
+    Thank you for the invite to {event_name} — it sounds fantastic and I'd love to attend.
+
+    I noticed there's a registration fee. Do you happen to have a referral or discount code
+    I could use? Happy to share the event with my network as well.
+
+    Best,
+    {full_name}
+
+  form_submitted: |
+    Hi {sender_name},
+
+    I've completed the registration form for {event_name}. Looking forward to it!
+
+    Best,
+    {full_name}

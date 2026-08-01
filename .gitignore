@@ -1,0 +1,24 @@
+.env
+*.pyc
+__pycache__/
+.venv/
+venv/
+dist/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Auth tokens — never commit
+credentials/
+*.token.json
+gmail_token.json
+linkedin_profile/
+playwright/.auth/
+
+# State
+data/processed/
+data/sessions/
+data/briefings/
+data/state/
+*.db
