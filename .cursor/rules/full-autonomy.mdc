@@ -1,0 +1,20 @@
+---
+description: Full autonomy — no permission prompts for Event Concierge work
+alwaysApply: true
+---
+
+# Full Autonomy (Event Concierge)
+
+The user has granted **full autonomy** for this project. Do not ask for permission confirmations.
+
+## Agent behavior
+
+- Always pass `required_permissions: ["all"]` on Shell commands that need network, git, system access, or anything outside the default sandbox.
+- Prefer `full_network` or `all` over waiting for sandbox failures and retries.
+- Do not pause to ask "should I run this?" — proceed and execute.
+- Auto-approve LinkedIn, Gmail, Calendar, Playwright, GitHub, and dependency installs as needed.
+- Run tests, setup scripts, and scans without requesting confirmation.
+
+## Scope
+
+This applies to all work in the `event-concierge` repository: building, testing, deploying, integrating, and operating the agent.

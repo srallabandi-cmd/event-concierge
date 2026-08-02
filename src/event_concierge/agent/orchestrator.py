@@ -2,14 +2,18 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 from datetime import datetime
-from pathlib import Path
 
 from event_concierge.agent.secretary import Secretary
-from event_concierge.config import ensure_data_dirs, get_profile_config, get_settings
+from event_concierge.config import (
+    ensure_config_dirs,
+    ensure_data_dirs,
+    get_profile_config,
+    get_settings,
+)
 from event_concierge.evaluators.event_scorer import EventScorer
+from event_concierge.evaluators.llm_evaluator import LLMEvaluator
 from event_concierge.integrations.calendar.apple_calendar import AppleCalendarClient
 from event_concierge.integrations.forms.form_filler import FormFiller
 from event_concierge.integrations.gmail.client import GmailClient
@@ -24,6 +28,9 @@ from event_concierge.models.events import (
     SecretaryBriefing,
     WorkflowStage,
 )
+from event_concierge.utils.logging import get_logger
+
+logger = get_logger("orchestrator")
 
 
 class EventConciergeOrchestrator:
@@ -31,10 +38,12 @@ class EventConciergeOrchestrator:
 
     def __init__(self, dry_run: bool = False) -> None:
         ensure_data_dirs()
+        ensure_config_dirs()
         self.dry_run = dry_run
         self.settings = get_settings()
         self.profile = get_profile_config()
         self.scorer = EventScorer()
+        self.llm_evaluator = LLMEvaluator()
         self.parser = MessageParser()
         self.secretary = Secretary()
         self.linkedin = LinkedInClient()
@@ -48,6 +57,11 @@ class EventConciergeOrchestrator:
 
         scan = await self.linkedin.scan_messages(limit=message_limit)
         result.metadata["scan"] = scan.model_dump()
+        logger.info(
+            "LinkedIn scan complete: %s threads, %s invites",
+            scan.scanned_count,
+            scan.event_invites_found,
+        )
 
         for invite in scan.new_invites:
             try:
@@ -60,6 +74,29 @@ class EventConciergeOrchestrator:
                 result.briefings_sent.append(briefing)
 
             except Exception as exc:
+                logger.exception("Failed processing invite %s", invite.id)
+                result.errors.append(f"{invite.id}: {exc}")
+
+        self._save_state(result.processed)
+        return result
+
+    async def run_demo_pipeline(self) -> PipelineResult:
+        """Process built-in sample invites without LinkedIn authentication."""
+        from event_concierge.demo.sample_invites import DEMO_INVITES
+
+        result = PipelineResult(metadata={"mode": "demo", "invite_count": len(DEMO_INVITES)})
+        logger.info("Running demo pipeline with %s sample invites", len(DEMO_INVITES))
+
+        for invite in DEMO_INVITES:
+            try:
+                booking = await self._process_invite(invite)
+                result.processed.append(booking)
+                briefing = self.secretary.briefing_for_stage(booking)
+                result.briefings_sent.append(briefing)
+                if not self.dry_run:
+                    self._deliver_briefing(briefing)
+            except Exception as exc:
+                logger.exception("Demo invite failed %s", invite.id)
                 result.errors.append(f"{invite.id}: {exc}")
 
         self._save_state(result.processed)
@@ -89,6 +126,7 @@ class EventConciergeOrchestrator:
         invite = self.parser.enrich(invite)
         invite = self.scorer.infer_event_metadata(invite)
         evaluation = self.scorer.evaluate(invite)
+        evaluation = self.llm_evaluator.enhance(invite, evaluation)
 
         booking = EventBooking(
             invite=invite,
@@ -190,7 +228,9 @@ class EventConciergeOrchestrator:
 
         try:
             self.gmail.send_briefing(briefing)
+            logger.info("Briefing delivered for %s (%s)", briefing.booking_id, briefing.stage.value)
         except Exception as exc:
+            logger.warning("Gmail briefing failed for %s: %s", briefing.booking_id, exc)
             briefing_path.with_suffix(".error").write_text(str(exc))
 
     def _generate_accept_reply(self, booking: EventBooking) -> str:

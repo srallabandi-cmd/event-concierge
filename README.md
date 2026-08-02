@@ -36,6 +36,8 @@ LinkedIn Messages → Event Detection → Goal Scoring → Accept/Decline
 
 ## Quick start
 
+Requires **Python 3.12** (3.14 is not supported for venv yet).
+
 ```bash
 cd ~/Projects/event-concierge
 python3 scripts/setup.py
@@ -44,11 +46,14 @@ python3 scripts/setup.py
 cp .env.example .env   # if setup didn't already
 # Edit .env, config/profile.yaml, config/goals.yaml
 
+# Try demo mode first (no LinkedIn auth needed)
+.venv/bin/event-concierge demo --dry-run
+
 # Authenticate integrations
 .venv/bin/event-concierge linkedin login
 .venv/bin/event-concierge gmail auth
 
-# Dry run first (no replies sent, no forms filled)
+# Dry run on real LinkedIn messages
 .venv/bin/event-concierge scan --dry-run
 
 # Go live
@@ -59,6 +64,8 @@ cp .env.example .env   # if setup didn't already
 
 | Command | Description |
 |---------|-------------|
+| `demo` | Run on sample invites — no LinkedIn auth required |
+| `demo --live` | Demo with Gmail/calendar actions enabled |
 | `scan` | Scan LinkedIn, evaluate, act on invites |
 | `scan --dry-run` | Evaluate only — no replies or form fills |
 | `decide <id> yes\|no` | Manually accept/decline a borderline invite |
@@ -118,20 +125,25 @@ Borderline invites (45–65% score) pause at `AWAITING_USER` and send you a brie
 
 ## Scheduling
 
-Run on a cron schedule to scan periodically:
+Every 2 hours during business hours (cron):
 
 ```bash
-# Every 2 hours during business hours
-0 9-18/2 * * 1-5 cd ~/Projects/event-concierge && .venv/bin/event-concierge scan
+0 9-18/2 * * 1-5 /Users/you/Projects/event-concierge/scripts/run_scheduled_scan.sh
 ```
 
-Or use a Cursor Automation with a cron trigger pointing at this repo.
+Or install the launchd plist (edit paths first):
+
+```bash
+# Edit scripts/com.eventconcierge.scan.plist — replace REPLACE_WITH_PROJECT_PATH
+cp scripts/com.eventconcierge.scan.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.eventconcierge.scan.plist
+```
 
 ## Configuration
 
 - **`config/goals.yaml`** — Scoring weights, signal keywords, thresholds
 - **`config/profile.yaml`** — Your name, title, reply templates, form-fill data
-- **`.env`** — API keys, notification email, paths
+- **`OPENAI_API_KEY`** (optional) — Enhances scoring with GPT-4o-mini; heuristics work without it
 
 ## Security notes
 

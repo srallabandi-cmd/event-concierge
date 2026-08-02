@@ -6,7 +6,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field
 
 
 class EventType(str, Enum):
@@ -86,8 +86,8 @@ class EventInvite(BaseModel):
     event_date: datetime | None = None
     event_end_date: datetime | None = None
     location: EventLocation = Field(default_factory=EventLocation)
-    registration_url: HttpUrl | None = None
-    form_url: HttpUrl | None = None
+    registration_url: str | None = None
+    form_url: str | None = None
     payment_amount: str | None = None
     payment_required: bool = False
     referral_code: str | None = None

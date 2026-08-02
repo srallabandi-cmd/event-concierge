@@ -14,7 +14,6 @@ from event_concierge.models.events import (
     Recommendation,
 )
 
-
 SF_BAY_KEYWORDS = {
     "san francisco",
     "sf",

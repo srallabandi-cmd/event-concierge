@@ -12,7 +12,14 @@ from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+def _find_project_root() -> Path:
+    for parent in Path(__file__).resolve().parents:
+        if (parent / "pyproject.toml").exists():
+            return parent
+    return Path(__file__).resolve().parents[2]
+
+
+PROJECT_ROOT = _find_project_root()
 CONFIG_DIR = PROJECT_ROOT / "config"
 DATA_DIR = PROJECT_ROOT / "data"
 
@@ -61,7 +68,7 @@ class ProfileConfig(BaseModel):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(PROJECT_ROOT / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -130,3 +137,10 @@ def get_profile_config() -> ProfileConfig:
 def ensure_data_dirs() -> None:
     for sub in ("processed", "sessions", "briefings", "state"):
         (DATA_DIR / sub).mkdir(parents=True, exist_ok=True)
+
+
+def ensure_config_dirs() -> None:
+    settings = get_settings()
+    settings.linkedin_profile_dir.mkdir(parents=True, exist_ok=True)
+    settings.gmail_token_path.parent.mkdir(parents=True, exist_ok=True)
+    settings.gmail_credentials_path.parent.mkdir(parents=True, exist_ok=True)

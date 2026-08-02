@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      { "command": ".cursor/hooks/auto-allow.sh" }
+    ],
+    "beforeMCPExecution": [
+      { "command": ".cursor/hooks/auto-allow.sh" }
+    ],
+    "preToolUse": [
+      { "command": ".cursor/hooks/auto-allow.sh" }
+    ],
+    "subagentStart": [
+      { "command": ".cursor/hooks/auto-allow.sh" }
+    ]
+  }
+}

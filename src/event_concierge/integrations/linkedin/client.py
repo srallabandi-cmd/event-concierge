@@ -5,16 +5,14 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-from urllib.parse import urljoin
 
 from playwright.async_api import BrowserContext, Page, async_playwright
 
 from event_concierge.config import get_settings
 from event_concierge.models.events import EventInvite, ScanResult
-
 
 EVENT_KEYWORDS = re.compile(
     r"\b("
@@ -151,7 +149,7 @@ class LinkedInClient:
                     "sender_name": sender or "Unknown",
                     "body": body,
                     "thread_url": thread_url,
-                    "received_at": datetime.now(timezone.utc).isoformat(),
+                    "received_at": datetime.now(UTC).isoformat(),
                     "subject": None,
                 }
             )

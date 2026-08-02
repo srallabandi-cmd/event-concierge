@@ -6,7 +6,6 @@ import json
 import subprocess
 import uuid
 from datetime import datetime, timedelta
-from pathlib import Path
 
 from event_concierge.config import get_settings
 from event_concierge.models.events import EventInvite

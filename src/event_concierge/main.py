@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -11,7 +10,13 @@ from rich.panel import Panel
 from rich.table import Table
 
 from event_concierge.agent.orchestrator import EventConciergeOrchestrator
-from event_concierge.config import ensure_data_dirs, get_goals_config, get_profile_config
+from event_concierge.config import (
+    ensure_config_dirs,
+    ensure_data_dirs,
+    get_goals_config,
+    get_profile_config,
+)
+from event_concierge.utils.logging import setup_logging
 
 app = typer.Typer(
     name="event-concierge",
@@ -28,24 +33,16 @@ app.add_typer(gmail_app, name="gmail")
 app.add_typer(calendar_app, name="calendar")
 
 
-@app.command()
-def scan(
-    limit: int = typer.Option(50, help="Max LinkedIn threads to scan"),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Evaluate without sending replies or filling forms"),
-):
-    """Scan LinkedIn messages and process event invites."""
-    ensure_data_dirs()
-    console.print(Panel.fit("[bold]Event Concierge[/bold] — Starting scan", border_style="blue"))
-
-    orchestrator = EventConciergeOrchestrator(dry_run=dry_run)
-    result = asyncio.run(orchestrator.run_full_pipeline(message_limit=limit))
-
-    table = Table(title="Scan Results")
+def _print_pipeline_result(result, title: str = "Scan Results") -> None:
+    table = Table(title=title)
     table.add_column("Metric", style="cyan")
     table.add_column("Value", style="green")
     scan_meta = result.metadata.get("scan", {})
-    table.add_row("Messages scanned", str(scan_meta.get("scanned_count", 0)))
-    table.add_row("Event invites found", str(scan_meta.get("event_invites_found", 0)))
+    if scan_meta:
+        table.add_row("Messages scanned", str(scan_meta.get("scanned_count", 0)))
+        table.add_row("Event invites found", str(scan_meta.get("event_invites_found", 0)))
+    elif result.metadata.get("mode") == "demo":
+        table.add_row("Demo invites", str(result.metadata.get("invite_count", 0)))
     table.add_row("Processed", str(len(result.processed)))
     table.add_row("Briefings sent", str(len(result.briefings_sent)))
     table.add_row("Errors", str(len(result.errors)))
@@ -68,6 +65,41 @@ def scan(
         console.print("[red]Errors:[/red]")
         for err in result.errors:
             console.print(f"  • {err}")
+
+
+@app.callback()
+def main_callback(
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable debug logging"),
+):
+    setup_logging(level="DEBUG" if verbose else "INFO")
+
+
+@app.command()
+def scan(
+    limit: int = typer.Option(50, help="Max LinkedIn threads to scan"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Evaluate without sending replies or filling forms"),
+):
+    """Scan LinkedIn messages and process event invites."""
+    ensure_data_dirs()
+    ensure_config_dirs()
+    console.print(Panel.fit("[bold]Event Concierge[/bold] — Starting scan", border_style="blue"))
+
+    orchestrator = EventConciergeOrchestrator(dry_run=dry_run)
+    result = asyncio.run(orchestrator.run_full_pipeline(message_limit=limit))
+    _print_pipeline_result(result)
+
+
+@app.command()
+def demo(
+    dry_run: bool = typer.Option(True, "--dry-run/--live", help="Dry-run skips Gmail/calendar actions"),
+):
+    """Run the agent on sample invites (no LinkedIn auth required)."""
+    ensure_data_dirs()
+    ensure_config_dirs()
+    console.print(Panel.fit("[bold]Event Concierge[/bold] — Demo mode", border_style="magenta"))
+    orchestrator = EventConciergeOrchestrator(dry_run=dry_run)
+    result = asyncio.run(orchestrator.run_demo_pipeline())
+    _print_pipeline_result(result, title="Demo Results")
 
 
 @app.command()

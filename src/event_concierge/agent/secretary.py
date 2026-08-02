@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-
 from event_concierge.models.events import (
     EventBooking,
     Recommendation,
@@ -53,7 +51,7 @@ class Secretary:
 
         value_section = ev.value_summary
         if ev.risk_flags:
-            value_section += f"\n\n**Flags:** " + "; ".join(ev.risk_flags)
+            value_section += "\n\n**Flags:** " + "; ".join(ev.risk_flags)
 
         goal_details = "\n".join(
             f"- **{g.goal_name}:** {g.score:.0%} — {g.rationale}"
